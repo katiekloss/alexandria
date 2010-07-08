@@ -4,6 +4,15 @@ import subprocess
 import re
 
 file_regex = re.compile('\s{2}(.*?)\s+([ADHSR]*)\s+(\d+)\s+(\w{3}\s+\w{3}\s+\d{1,2}\s\d\d:\d\d:\d\d\s+\d{4})')
+hostname_regex = re.compile('\s+([-A-Za-z0-9]+?)\s+<20>')
+
+class Host:
+    """Implements a generic host object for storing metadata"""
+
+    def __init__(self, address, hostname):
+        self.address = address
+        self.hostname = hostname
+
 
 class File:
     """Implements a generic file object for storing metadata"""
@@ -21,6 +30,35 @@ class Share:
     def __init__(self, name, comment):
         self.name = name
         self.comment = comment
+
+
+def list_hosts(workgroup):
+    """Get a list of all SMB-enabled hosts in the given workgroup."""
+
+    hosts = []
+    command = ["/usr/local/bin/nmblookup", workgroup]
+
+    process = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    output = process.communicate(input=None)[0]
+
+    if 'name_query failed to find name' in output:
+        raise ValueError("Workgroup '%s' does not exist" % workgroup)
+
+    for line in output.split('\n'):
+        if line.endswith('<00>'):
+            ip = line.split(' ')[0]
+            command = ["/usr/local/bin/nmblookup", "-A", ip]
+            process = subprocess.Popen(command, stdin=PIPE, stdout=PIPE)
+            listing = process.communicate(input=None)[0]
+            if 'No reply from' in listing:
+                hostname = None
+            else:
+                m = hostname_regex.search(listing)
+                hostname = None
+                if m:
+                    hostname = m.group(1)
+            hosts.append(Host(ip, hostname))
+    return hosts
 
 
 #TODO: Implement this as a C extension around the Samba libraries
