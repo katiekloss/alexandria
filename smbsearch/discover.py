@@ -14,6 +14,15 @@ class File:
     def __str__(self):
         return self.fullpath
 
+
+class Share:
+    """Implements a generic share object for storing metadata"""
+
+    def __init__(self, name, comment):
+        self.name = name
+        self.comment = comment
+
+
 #TODO: Implement this as a C extension around the Samba libraries
 def list_files(host, share):
     """Get a list of all files in a given share on the given host (and we mean
@@ -42,3 +51,23 @@ def list_files(host, share):
         if m and 'D' not in m.group(2):
             files.append(File(current_dir + '\\' + m.group(1)))
     return files
+
+#TODO: This should be a C extension too
+def list_shares(host):
+    """Return a list of shares on the given host."""
+
+    shares = []
+    command = ["/usr/local/bin/smbclient", "-g", "-N", "-L", host]
+    null = open('/dev/null', 'w')
+    process = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=null)
+    null.close()
+    output = process.communicate(input=None)[0]
+
+    if 'Error NT_STATUS_BAD_NETWORK_NAME' in output:
+        raise ValueError("Host %s does not exist" % host)
+
+    for line in output.split('\n'):
+        parts = line.split('|')
+        if parts[0] == "Disk":
+            shares.append(Share(parts[1], parts[2]))
+    return shares
