@@ -11,6 +11,8 @@ except ImportError:
 import smbsearch.share
 
 try:
-    smbsearch.share.list_files(sys.argv[1], sys.argv[2])
+    for file in smbsearch.share.list_files(sys.argv[1], sys.argv[2]):
+        print file
+
 except IndexError:
     print "Usage: %s <host> <share>" % sys.argv[0]

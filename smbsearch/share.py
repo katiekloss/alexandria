@@ -5,11 +5,21 @@ import re
 
 file_regex = re.compile('\s{2}(.*?)\s+([ADHSR]*)\s+(\d+)\s+(\w{3}\s+\w{3}\s+\d{1,2}\s\d\d:\d\d:\d\d\s+\d{4})')
 
+class File:
+    """Implements a generic file object for storing metadata"""
+
+    def __init__(self, fullpath):
+        self.fullpath = fullpath
+
+    def __str__(self):
+        return self.fullpath
+
 #TODO: Implement this as a C extension around the Samba libraries
 def list_files(host, share):
     """Get a list of all files in a given share on the given host (and we mean
     ALL of the files)."""
 
+    files = []
     command = ["/usr/local/bin/smbclient", "-N", "//%s/%s" % (host, share)]
     null = open('/dev/null', 'w')
     process = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=null)
@@ -30,4 +40,5 @@ def list_files(host, share):
             continue
         m = file_regex.match(line)
         if m and 'D' not in m.group(2):
-            print current_dir + '\\' + m.group(1)
+            files.append(File(current_dir + '\\' + m.group(1)))
+    return files
