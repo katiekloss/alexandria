@@ -8,10 +8,10 @@ except ImportError:
     sys.path.append(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0])
     import smbsearch
 
-import smbsearch.share
+import smbsearch.discover
 
 try:
-    for file in smbsearch.share.list_files(sys.argv[1], sys.argv[2]):
+    for file in smbsearch.discover.list_files(sys.argv[1], sys.argv[2]):
         print file
 
 except IndexError:
