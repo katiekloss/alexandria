@@ -2,6 +2,7 @@ from subprocess import PIPE
 
 import subprocess
 import re
+import logging
 
 file_regex = re.compile('\s{2}(.*?)\s+([ADHSR]*)\s+(\d+)\s+(\w{3}\s+\w{3}\s+\d{1,2}\s\d\d:\d\d:\d\d\s+\d{4})')
 hostname_regex = re.compile('\s+([-A-Za-z0-9]+?)\s+<20>')
@@ -42,21 +43,25 @@ def list_hosts(workgroup):
     output = process.communicate(input=None)[0]
 
     if 'name_query failed to find name' in output:
+        logging.error("Failed to find workgroup '%s'" % workgroup)
         raise ValueError("Workgroup '%s' does not exist" % workgroup)
 
     for line in output.split('\n'):
         if line.endswith('<00>'):
             ip = line.split(' ')[0]
+            logging.debug("Discovered host %s" % ip)
             command = ["/usr/local/bin/nmblookup", "-A", ip]
             process = subprocess.Popen(command, stdin=PIPE, stdout=PIPE)
             listing = process.communicate(input=None)[0]
             if 'No reply from' in listing:
                 hostname = None
+                logging.debug("Unable to resolve hostname for %s" % ip)
             else:
                 m = hostname_regex.search(listing)
                 hostname = None
                 if m:
                     hostname = m.group(1)
+                    logging.debug("Resolved %s to '%s'" % (ip, hostname))
             hosts.append(Host(ip, hostname))
     return hosts
 
