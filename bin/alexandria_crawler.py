@@ -2,6 +2,7 @@
 
 import os
 import sys
+import signal
 
 try:
     import alexandria
@@ -13,16 +14,25 @@ import logging
 import alexandria.discover
 import alexandria.crawler
 
+crawler = None
+
 def setupLogging(log_level):
     """Initializes the Python logging module."""
-    logging.basicConfig(filename="crawler.log", level=log_level,
+    logging.basicConfig(filename='crawler.log', level=log_level,
         format='%(asctime)s - %(module)s:%(funcName)s(%(lineno)d):%(levelname)s - %(message)s')
 
 def main():
     """Run a crawler"""
+    global crawler
     crawler = alexandria.crawler.Crawler()
     crawler.run()
 
+def handleSigint(signal, frame):
+    logging.info("Caught SIGINT, shutting down")
+    crawler.stop()
+    sys.exit(0)
+
 if __name__ == "__main__":
     setupLogging(logging.DEBUG)
+    signal.signal(signal.SIGINT, handleSigint)
     main()

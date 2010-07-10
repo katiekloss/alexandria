@@ -31,8 +31,9 @@ class Crawler:
             logging.debug("Launching thread %s" % i)
             worker.start()
         logging.info("Launched thread pool with %s threads" % threadCount)
-        time.sleep(5)
-        self.stop()
+        while 1:
+            logging.debug("Crawler polling")
+            time.sleep(10)
 
     def stop(self):
         logging.info("Shutting down thread pool")
