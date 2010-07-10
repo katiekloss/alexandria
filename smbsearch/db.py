@@ -1,3 +1,4 @@
+import smbsearch.config
 import smbsearch.model
 from sqlalchemy import create_engine
 import logging
@@ -11,7 +12,9 @@ def getConnection():
 def initializeDatabase():
     """Prepare database connections and tables for use."""
 
-    engine = create_engine('sqlite:///crawler.sqlite')
+    driver = smbsearch.config.get('db', 'driver')
+    db_file = smbsearch.config.get('db', 'dbfile')
+    engine = create_engine('%s:///%s' % (driver, db_file))
     logging.info("Initialized database engine")
     smbsearch.model.metadata.create_all(engine)
     logging.debug("Initialized database tables")

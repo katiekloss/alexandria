@@ -1,5 +1,6 @@
 """Implements the main smbsearch crawler code"""
 
+import smbsearch.config
 import smbsearch.discover
 import smbsearch.db
 import smbsearch.model
@@ -15,6 +16,7 @@ class Crawler:
     def run(self):
         """Runs the crawler"""
         logging.info("Crawler starting")
+        smbsearch.config.loadConfig('crawler.cfg')
         smbsearch.db.initializeDatabase()
 
 class CrawlerWorker():
