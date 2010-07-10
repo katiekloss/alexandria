@@ -3,15 +3,15 @@
 import os
 import sys
 try:
-    import smbsearch
+    import alexandria
 except ImportError:
     sys.path.append(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0])
-    import smbsearch
+    import alexandria
 
-import smbsearch.discover
+import alexandria.discover
 
 try:
-    for file in smbsearch.discover.list_files(sys.argv[1], sys.argv[2]):
+    for file in alexandria.discover.list_files(sys.argv[1], sys.argv[2]):
         print file
 
 except IndexError:

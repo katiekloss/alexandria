@@ -4,14 +4,14 @@ import os
 import sys
 
 try:
-    import smbsearch
+    import alexandria
 except ImportError:
     sys.path.append(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0])
-    import smbsearch
+    import alexandria
 
 import logging
-import smbsearch.discover
-import smbsearch.crawler
+import alexandria.discover
+import alexandria.crawler
 
 def setupLogging(log_level):
     """Initializes the Python logging module."""
@@ -20,7 +20,7 @@ def setupLogging(log_level):
 
 def main():
     """Run a crawler"""
-    crawler = smbsearch.crawler.Crawler()
+    crawler = alexandria.crawler.Crawler()
     crawler.run()
 
 if __name__ == "__main__":

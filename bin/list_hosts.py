@@ -3,14 +3,14 @@
 import os
 import sys
 try:
-    import smbsearch
+    import alexandria
 except ImportError:
     sys.path.append(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0])
-    import smbsearch
+    import alexandria
 
-import smbsearch.discover
+import alexandria.discover
 try:
-    hosts = smbsearch.discover.list_hosts(sys.argv[1])
+    hosts = alexandria.discover.list_hosts(sys.argv[1])
     for host in hosts:
         print "%s -> %s" % (host.address, host.hostname)
 except IndexError:

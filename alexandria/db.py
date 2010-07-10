@@ -1,5 +1,5 @@
-import smbsearch.config
-import smbsearch.model
+import alexandria.config
+import alexandria.model
 from sqlalchemy import create_engine
 import logging
 
@@ -12,9 +12,10 @@ def getConnection():
 def initializeDatabase():
     """Prepare database connections and tables for use."""
 
-    driver = smbsearch.config.get('db', 'driver')
-    db_file = smbsearch.config.get('db', 'dbfile')
+    driver = alexandria.config.get('db', 'driver')
+    db_file = alexandria.config.get('db', 'dbfile')
     engine = create_engine('%s:///%s' % (driver, db_file))
     logging.info("Initialized database engine")
-    smbsearch.model.metadata.create_all(engine)
+
+    alexandria.model.metadata.create_all(engine)
     logging.debug("Initialized database tables")
