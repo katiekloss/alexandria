@@ -6,6 +6,11 @@ import alexandria.db
 import alexandria.model
 import threading
 import logging
+import Queue
+import time
+
+globalQueue = Queue.Queue()
+threadPool = []
 
 class Crawler:
     """I'm a SMB share crawler!"""
@@ -19,11 +24,39 @@ class Crawler:
         alexandria.config.loadConfig('crawler.cfg')
         alexandria.db.initializeDatabase()
 
-class CrawlerWorker():
+        threadCount = int(alexandria.config.get('crawler', 'threads'))
+        for i in range(0, threadCount):
+            worker = CrawlerWorker(i)
+            threadPool.append(worker)
+            logging.debug("Launching thread %s" % i)
+            worker.start()
+        logging.info("Launched thread pool with %s threads" % threadCount)
+        time.sleep(5)
+        self.stop()
+
+    def stop(self):
+        logging.info("Shutting down thread pool")
+        for worker in threadPool:
+            worker.stop()
+        for worker in threadPool:
+            worker.join()
+        logging.info("Crawler stopped")
+
+
+class CrawlerWorker(threading.Thread):
     """I'm the crawler that actually writes to the database!"""
 
-    def __init__(self, host):
-        self.host = host
+    def __init__(self, id):
+        self.shutdown = False
+        self.id = id
+        threading.Thread.__init__(self)
 
     def run(self):
-        pass
+        while not self.shutdown:
+            logging.debug("Worker %s polling" % self.id)
+            time.sleep(5)
+        logging.info("Worker %s stopping" % self.id)
+
+    def stop(self):
+        self.shutdown = True
+        logging.debug("Worker %s set to shutdown" % self.id)
