@@ -1,6 +1,8 @@
 """Implements the main smbsearch crawler code"""
 
 import smbsearch.discover
+import smbsearch.db
+import smbsearch.model
 import threading
 import logging
 
@@ -13,8 +15,7 @@ class Crawler:
     def run(self):
         """Runs the crawler"""
         logging.info("Crawler starting")
-        hosts = smbsearch.discover.list_hosts("WORKGROUP")
-        logging.info("Autodiscovered %s hosts" % len(hosts))
+        smbsearch.db.initializeDatabase()
 
 class CrawlerWorker():
     """I'm the crawler that actually writes to the database!"""
