@@ -1,13 +1,17 @@
 """Implements the main alexandria crawler code"""
 
+from alexandria.model import Host, Share, File
+from sqlalchemy import or_
+
 import alexandria.config
 import alexandria.discover
 import alexandria.db
-import alexandria.model
 import threading
 import logging
 import Queue
 import time
+import datetime
+import sqlalchemy
 
 globalQueue = Queue.Queue()
 threadPool = []
@@ -33,7 +37,11 @@ class Crawler:
         logging.info("Launched thread pool with %s threads" % threadCount)
         while 1:
             logging.debug("Crawler polling")
-            time.sleep(10)
+            hosts = get_hosts_to_check()
+            logging.debug("Added %s hosts to the queue" % len(hosts))
+            for host in hosts:
+                globalQueue.put(host)
+            time.sleep(15)
 
     def stop(self):
         logging.info("Shutting down thread pool")
@@ -55,9 +63,24 @@ class CrawlerWorker(threading.Thread):
     def run(self):
         while not self.shutdown:
             logging.debug("Worker %s polling" % self.id)
+            try:
+                host = globalQueue.get(False)
+                logging.debug("Worker %s processing host '%s'" % (self.id, host.name))
+            except Queue.Empty:
+                pass
             time.sleep(5)
         logging.info("Worker %s stopping" % self.id)
 
     def stop(self):
         self.shutdown = True
         logging.debug("Worker %s set to shutdown" % self.id)
+
+
+def get_hosts_to_check():
+    """Get a complete list of hosts that need to be indexed."""
+
+    session = alexandria.db.getSession()
+    current_timestamp = datetime.datetime.now()
+    expire_timestamp = current_timestamp - datetime.timedelta(hours=6)
+    return session.query(Host).filter(or_(Host.last_poll <= expire_timestamp,
+        Host.last_poll == None)).all()
