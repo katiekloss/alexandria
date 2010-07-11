@@ -1,5 +1,6 @@
 """Implements the main alexandria crawler code"""
 
+from alexandria.config import config
 from alexandria.model import Host, Share, File
 from sqlalchemy import or_
 
@@ -28,7 +29,7 @@ class Crawler:
         alexandria.config.loadConfig('crawler.cfg')
         alexandria.db.initializeDatabase()
 
-        threadCount = int(alexandria.config.get('crawler', 'threads'))
+        threadCount = config.getint('crawler', 'threads')
         for i in range(0, threadCount):
             worker = CrawlerWorker(i)
             threadPool.append(worker)
