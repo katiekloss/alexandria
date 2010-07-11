@@ -82,6 +82,8 @@ def get_hosts_to_check():
 
     session = alexandria.db.getSession()
     current_timestamp = datetime.datetime.now()
-    expire_timestamp = current_timestamp - datetime.timedelta(hours=6)
+    max_age = config.getint('crawler', 'host_max_age')
+    expire_timestamp = current_timestamp - datetime.timedelta(hours=max_age)
+    # Select hosts older than our max age OR hosts that have never been polled
     return session.query(Host).filter(or_(Host.last_poll <= expire_timestamp,
         Host.last_poll == None)).all()
