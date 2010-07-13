@@ -1,7 +1,15 @@
 from alexandria.config import config
 from couchdb.http import ResourceNotFound
+from couchdb.mapping import *
 import couchdb
 import logging
+
+class Host(Document):
+    """A generic Document representing a host"""
+    name = TextField()
+    age = DateTimeField()
+    files = ListField(TextField())
+
 
 def getDatabaseConnection(username=None, password=None,
     server='127.0.0.1', port=5984):
