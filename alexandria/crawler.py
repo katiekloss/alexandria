@@ -89,6 +89,7 @@ class CrawlerWorker(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        self.initialize_database()
         while not self.shutdown:
             logging.debug("Worker %s polling" % self.id)
             globalQueueLock.acquire()
@@ -105,3 +106,11 @@ class CrawlerWorker(threading.Thread):
     def stop(self):
         self.shutdown = True
         logging.debug("Worker %s set to shutdown" % self.id)
+
+    def initialize_database(self):
+        """Setup a database connection to CouchDB."""
+        config = ConfigParser.ConfigParser()
+        config.read('crawler.cfg')
+        username = config.get('couchdb', 'username')
+        password = config.get('couchdb', 'password')
+        self.db = alexandria.couch.getDatabase(username, password)
