@@ -1,13 +1,11 @@
 """Implements the main alexandria crawler code"""
 
-from alexandria.config import config
-
-import alexandria.config
 import alexandria.discover
 import threading
 import logging
 import Queue
 import time
+import ConfigParser
 
 globalQueue = Queue.Queue()
 threadPool = []
@@ -21,9 +19,10 @@ class Crawler:
     def run(self):
         """Runs the crawler"""
         logging.info("Crawler starting")
-        alexandria.config.loadConfig('crawler.cfg')
-
-        threadCount = config.getint('crawler', 'threads')
+        self.config = ConfigParser.ConfigParser()
+        self.config.read('crawler.cfg')
+        logging.info("Loaded config file")
+        threadCount = self.config.getint('crawler', 'threads')
         for i in range(0, threadCount):
             worker = CrawlerWorker(i)
             threadPool.append(worker)
