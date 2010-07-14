@@ -40,8 +40,8 @@ class Crawler:
             logging.debug("Got %s old hosts to index" % len(hosts))
             globalQueueLock.acquire()
             for row in hosts:
-                if not row.value in globalQueue:
-                    globalQueue.append(row.value)
+                if not row.key in globalQueue:
+                    globalQueue.append(row.key)
             logging.debug("Queue size: %s" % len(globalQueue))
             globalQueueLock.release()
             time.sleep(15)
@@ -94,12 +94,12 @@ class CrawlerWorker(threading.Thread):
             logging.debug("Worker %s polling" % self.id)
             globalQueueLock.acquire()
             if len(globalQueue) > 0:
-                host = globalQueue.pop()
+                host_key = globalQueue.pop()
             else:
-                host = None
+                host_key = None
             globalQueueLock.release()
-            if host:
-                logging.debug("Worker %s processing host '%s'" % (self.id, host['name']))
+            if host_key:
+                logging.debug("Worker %s processing key '%s'" % (self.id, host_key))
             time.sleep(5)
         logging.info("Worker %s stopping" % self.id)
 
