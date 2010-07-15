@@ -92,7 +92,7 @@ def list_files(host, share):
             continue
         m = file_regex.match(line)
         if m and 'D' not in m.group(2):
-            files.append(File(current_dir + '\\' + m.group(1)))
+            files.append(current_dir + '\\' + m.group(1))
     return files
 
 #TODO: This should be a C extension too
@@ -112,5 +112,5 @@ def list_shares(host):
     for line in output.split('\n'):
         parts = line.split('|')
         if parts[0] == "Disk":
-            shares.append(Share(parts[1], parts[2]))
+            shares.append(parts[1])
     return shares
