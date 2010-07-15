@@ -44,7 +44,7 @@ class Crawler:
                     globalQueue.append(row.key)
             logging.debug("Queue size: %s" % len(globalQueue))
             globalQueueLock.release()
-            time.sleep(15)
+            time.sleep(60)
 
     def stop(self):
         logging.info("Shutting down thread pool")
@@ -74,7 +74,7 @@ class Crawler:
         max_age = self.config.getint('crawler', 'max_host_age')
         expire_time = datetime.datetime.now() - \
             datetime.timedelta(hours=max_age)
-        expire_time = expire_time.strftime('%Y-%m-%dT%H:%M:%S')
+        expire_time = expire_time.strftime('%Y-%m-%d %H:%M:%S')
         logging.debug("Checking for hosts older than %s" % expire_time)
         map_fun = alexandria.couch.func_get_old_hosts % expire_time
         return list(self.db.query(map_fun))
@@ -100,7 +100,26 @@ class CrawlerWorker(threading.Thread):
             globalQueueLock.release()
             if host_key:
                 logging.debug("Worker %s processing key '%s'" % (self.id, host_key))
-            time.sleep(5)
+                host = self.db.get(host_key)
+
+                if not host:        # This shouldn't happen
+                    logging.error("Worker %s failed to find document key '%s'" % (self.id, host_key))
+                    return
+
+                file_list = []
+                try:
+                    shares = alexandria.discover.list_shares(host['name'])
+                    for share in shares:
+                        files = alexandria.discover.list_files(host['name'], share)
+                        file_list.append(files)
+                    host['files'] = file_list
+                except ValueError, e:
+                    logging.error("Worker %s got error: %s" % (self.id, e.value))
+
+                host['age'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                self.db.save(host)
+                logging.info("Worker %s: crawl for host '%s' finished" % (self.id, host['name']))
+            time.sleep(45)
         logging.info("Worker %s stopping" % self.id)
 
     def stop(self):
