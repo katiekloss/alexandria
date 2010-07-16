@@ -96,33 +96,19 @@ class CrawlerWorker(threading.Thread):
         self.initialize_database()
         while not self.shutdown:
             self.logger.debug("Polling")
-            globalQueueLock.acquire()
-            if len(globalQueue) > 0:
-                host_key = globalQueue.pop()
-            else:
-                host_key = None
-            globalQueueLock.release()
+            with globalQueueLock:
+                if len(globalQueue) > 0:
+                    host_key = globalQueue.pop()
+                else:
+                    host_key = None
             if host_key:
                 self.logger.debug("Processing key '%s'" % host_key)
                 host = self.db.get(host_key)
-            else:
-                host = None
-            if host and host_key:
                 if 'name' in host:
-                    self.logger.info("Crawling host '%s'" % host['name'])
-                    file_list = []
-                    try:
-                        shares = alexandria.discover.list_shares(host['name'])
-                        for share in shares:
-                            files = alexandria.discover.list_files(host['name'], share)
-                            file_list.append(files)
-                        host['files'] = file_list
-                    except ValueError, e:
-                        self.logger.error("Error while pulling filelist: %s" % e.value)
-
-                    host['age'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    self.db.save(host)
-                    self.logger.info("Crawl for host '%s' finished" % host['name'])
+                    if host['name']:
+                        self.process_host(host)
+                    else:
+                        self.logger.warning("Document key '%s' has None as name" % host_key)
                 else:
                     self.logger.warning("Document key '%s' has no name field" % host_key)
             time.sleep(1)
@@ -140,3 +126,20 @@ class CrawlerWorker(threading.Thread):
         password = config.get('couchdb', 'password')
         self.db = alexandria.couch.getDatabase(username, password)
         self.logger.debug("Created database connection")
+
+    def process_host(self, host):
+        """Given a document for host, index that host"""
+        self.logger.info("Crawling host '%s'" % host['name'])
+        file_list = []
+        try:
+            shares = alexandria.discover.list_shares(host['name'])
+            for share in shares:
+                files = alexandria.discover.list_files(host['name'], share)
+                file_list.append(files)
+            host['files'] = file_list
+        except ValueError as e:
+            self.logger.error("Error while pulling filelist: %s" % e)
+
+        host['age'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.db.save(host)
+        self.logger.info("Crawl for host '%s' finished" % host['name'])
