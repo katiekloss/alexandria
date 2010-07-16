@@ -15,6 +15,7 @@ import alexandria.discover
 import alexandria.crawler
 
 crawler = None
+logger = logging.getLogger('main')
 
 def setupLogging(log_level):
     """Initializes the Python logging module."""
@@ -28,7 +29,7 @@ def main():
     crawler.run()
 
 def handleSigint(signal, frame):
-    logging.info("Caught SIGINT, shutting down")
+    logger.info("Caught SIGINT, shutting down")
     crawler.stop()
     sys.exit(0)
 
@@ -36,3 +37,4 @@ if __name__ == "__main__":
     setupLogging(logging.DEBUG)
     signal.signal(signal.SIGINT, handleSigint)
     main()
+    logging.shutdown()

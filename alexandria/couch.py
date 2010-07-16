@@ -14,6 +14,8 @@ function(doc) {
 }
 """
 
+logger = logging.getLogger("alexandria.couch")
+
 class Host(Document):
     """A generic Document representing a host"""
     name = TextField()
@@ -36,8 +38,8 @@ def getDatabase(username=None, password=None, server='127.0.0.1', port=5984,
     server = getDatabaseConnection(username, password, server, port)
     try:
         db = server[db_name]
-        logging.debug("Opened database")
+        logger.debug("Opened database")
     except ResourceNotFound:
         db = server.create(db_name)
-        logging.info("Created database '%s' on server" % db_name)
+        logger.info("Created database '%s' on server" % db_name)
     return db
