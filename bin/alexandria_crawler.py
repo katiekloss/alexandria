@@ -19,8 +19,8 @@ logger = logging.getLogger('main')
 
 def setupLogging(log_level):
     """Initializes the Python logging module."""
-    logging.basicConfig(filename='crawler.log', level=log_level,
-        format='%(asctime)s - %(module)s:%(funcName)s(%(lineno)d):%(levelname)s - %(message)s')
+    logging.basicConfig(level=log_level,
+        format='%(asctime)s - %(name)s:%(funcName)s(%(lineno)d):%(levelname)s - %(message)s')
 
 def main():
     """Run a crawler"""
