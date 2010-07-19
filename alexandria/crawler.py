@@ -10,6 +10,8 @@ import datetime
 
 globalQueue = list()
 globalQueueLock = threading.Lock()
+pendingQueue = list()
+pendingQueueLock = threading.Lock()
 threadPool = []
 
 class Crawler:
@@ -40,10 +42,12 @@ class Crawler:
             hosts = self.get_old_hosts()
             self.logger.debug("Got %s old hosts to index" % len(hosts))
             globalQueueLock.acquire()
+            pendingQueueLock.acquire()
             for row in hosts:
-                if not row.key in globalQueue:
+                if not row.key in globalQueue and not row.key in pendingQueue:
                     globalQueue.append(row.key)
                     self.logger.debug("Queued document key %s" % row.key)
+            pendingQueueLock.release()
             globalQueueLock.release()
             time.sleep(60)
 
@@ -97,10 +101,12 @@ class CrawlerWorker(threading.Thread):
         while not self.shutdown:
             self.logger.debug("Polling")
             with globalQueueLock:
-                if len(globalQueue) > 0:
-                    host_key = globalQueue.pop()
-                else:
-                    host_key = None
+                with pendingQueueLock:
+                    if len(globalQueue) > 0:
+                        host_key = globalQueue.pop()
+                        pendingQueue.append(host_key)
+                    else:
+                        host_key = None
             if host_key:
                 self.logger.debug("Processing key '%s'" % host_key)
                 host = self.db.get(host_key)
@@ -111,6 +117,8 @@ class CrawlerWorker(threading.Thread):
                         self.logger.warning("Document key '%s' has None as name" % host_key)
                 else:
                     self.logger.warning("Document key '%s' has no name field" % host_key)
+                with pendingQueueLock:
+                    pendingQueue.remove(host_key)
             time.sleep(1)
         self.logger.info("Stopped")
 
