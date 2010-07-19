@@ -1,4 +1,3 @@
-from alexandria.config import config
 from couchdb.http import ResourceNotFound
 from couchdb.mapping import *
 import couchdb
