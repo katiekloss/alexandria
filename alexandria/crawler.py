@@ -7,6 +7,7 @@ import logging
 import time
 import ConfigParser
 import datetime
+import httplib
 
 globalQueue = list()
 globalQueueLock = threading.Lock()
@@ -49,7 +50,7 @@ class Crawler:
                     self.logger.debug("Queued document key %s" % row.key)
             pendingQueueLock.release()
             globalQueueLock.release()
-            time.sleep(60)
+            time.sleep(45)
 
     def stop(self):
         self.logger.info("Shutting down")
@@ -83,7 +84,11 @@ class Crawler:
         expire_time = expire_time.strftime('%Y-%m-%d %H:%M:%S')
         self.logger.debug("Checking for hosts older than %s" % expire_time)
         map_fun = alexandria.couch.func_get_old_hosts % expire_time
-        return list(self.db.query(map_fun))
+        try:
+            return list(self.db.query(map_fun))
+        except httplib.BadStatusLine:
+            self.logger.warning("get_old_hosts query failed")
+            return []
 
 
 class CrawlerWorker(threading.Thread):
