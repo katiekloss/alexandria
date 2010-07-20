@@ -3,6 +3,7 @@
 import os
 import sys
 import signal
+import argparse
 
 try:
     import alexandria
@@ -34,7 +35,14 @@ def handleSigint(signal, frame):
     sys.exit(0)
 
 if __name__ == "__main__":
-    setupLogging(logging.DEBUG)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', '-d', help="Turn on debugging output",
+        action='store_true')
+    args = parser.parse_args()
+    if args.debug:
+        setupLogging(logging.DEBUG)
+    else:
+        setupLogging(logging.INFO)
     signal.signal(signal.SIGINT, handleSigint)
     main()
     logging.shutdown()
