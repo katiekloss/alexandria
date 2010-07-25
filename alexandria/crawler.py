@@ -2,6 +2,7 @@
 
 import alexandria.discover
 import alexandria.couch
+import alexandria.js
 import threading
 import logging
 import time
@@ -83,7 +84,7 @@ class Crawler:
             datetime.timedelta(hours=max_age)
         expire_time = expire_time.strftime('%Y-%m-%d %H:%M:%S')
         self.logger.debug("Checking for hosts older than %s" % expire_time)
-        map_fun = alexandria.couch.func_get_old_hosts % expire_time
+        map_fun = alexandria.js.fun_get_old_hosts % expire_time
         try:
             return list(self.db.query(map_fun))
         except httplib.BadStatusLine:

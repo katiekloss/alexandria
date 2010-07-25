@@ -3,16 +3,6 @@ from couchdb.mapping import *
 import couchdb
 import logging
 
-func_get_old_hosts = """
-function(doc) {
-    if(!doc.age) {
-        emit(doc._id);
-    } else if(doc.age < "%s") {
-        emit(doc._id);
-    }
-}
-"""
-
 logger = logging.getLogger("alexandria.couch")
 
 class Host(Document):
