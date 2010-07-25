@@ -85,14 +85,15 @@ def list_files(host, share):
     elif 'tree connect failed: NT_STATUS_ACCESS_DENIED' in output[0]:
         raise ValueError("Access denied to %s on %s" % (share, host))
 
-    current_dir = ''
+    current_dir = ""
     for line in output[0].split('\n'):
         if line.startswith('\\'):
-            current_dir = line[1:]
+            current_dir = '/' + line[1:].replace('\\', '/')
             continue
         m = file_regex.match(line)
         if m and 'D' not in m.group(2):
-            files.append(current_dir + '\\' + m.group(1))
+            path = current_dir + '/' + m.group(1)
+            files.append(path)
     return files
 
 #TODO: This should be a C extension too

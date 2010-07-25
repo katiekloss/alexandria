@@ -149,7 +149,7 @@ class CrawlerWorker(threading.Thread):
             shares = alexandria.discover.list_shares(host['name'])
             for share in shares:
                 files = alexandria.discover.list_files(host['name'], share)
-                file_list.append(files)
+                file_list = file_list + [share + x for x in files]
             host['files'] = file_list
         except ValueError as e:
             self.logger.error("Error while pulling filelist: %s" % e)
