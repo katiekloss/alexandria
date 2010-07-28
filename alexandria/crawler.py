@@ -155,9 +155,9 @@ class CrawlerWorker(threading.Thread):
         for share in shares:
             try:
                 files = alexandria.discover.list_files(host['name'], share)
-                file_list.append(files)
+                file_list = file_list + [share + x for x in files]
             except ValueError as e:
-                self.logger.error("Error while pulling file list: %s" % e)
+                self.logger.error("Error while pulling filelist: %s" % e)
 
         host['files'] = file_list
         host['age'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

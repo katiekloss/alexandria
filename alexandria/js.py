@@ -8,3 +8,20 @@ function(doc) {
     }
 }
 """
+
+fun_gen_doc_index = \
+"""
+function(doc) {
+    doc.files.map(
+        function(file) {
+            var lower = file.toLowerCase();
+            var tokens = lower.split(/[^-A-Za-z0-9_]+/);
+            tokens.map(
+                function(token) {
+                    emit(token, doc._id);
+                }
+            )
+        }
+    )
+}
+"""
