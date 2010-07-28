@@ -144,15 +144,21 @@ class CrawlerWorker(threading.Thread):
         """Given a document for host, index that host"""
         self.logger.info("Crawling host '%s'" % host['name'])
         file_list = []
+
         try:
             shares = alexandria.discover.list_shares(host['name'])
-            for share in shares:
+        except ValueError as e:
+            self.logger.error("Error while pulling share list: %s" % e)
+            shares = []
+
+        for share in shares:
+            try:
                 files = alexandria.discover.list_files(host['name'], share)
                 file_list.append(files)
-            host['files'] = file_list
-        except ValueError as e:
-            self.logger.error("Error while pulling filelist: %s" % e)
+            except ValueError as e:
+                self.logger.error("Error while pulling file list: %s" % e)
 
+        host['files'] = file_list
         host['age'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.db.save(host)
         self.logger.info("Crawl for host '%s' finished" % host['name'])
