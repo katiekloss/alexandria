@@ -72,7 +72,8 @@ def list_files(host, share):
     ALL of the files)."""
 
     files = []
-    command = ["/usr/local/bin/smbclient", "-N", "//%s/%s" % (host, share)]
+    command = ["/usr/local/bin/smbclient", "-N", "//%s/%s" % (host, share), \
+        "-U", "Guest"]
     null = open('/dev/null', 'w')
     process = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=null)
     null.close()
@@ -101,7 +102,8 @@ def list_shares(host):
     """Return a list of shares on the given host."""
 
     shares = []
-    command = ["/usr/local/bin/smbclient", "-g", "-N", "-L", host]
+    command = ["/usr/local/bin/smbclient", "-g", "-N", "-L", host, \
+        "-U", "Guest"]
     null = open('/dev/null', 'w')
     process = subprocess.Popen(command, stdin=PIPE, stdout=PIPE, stderr=null)
     null.close()
