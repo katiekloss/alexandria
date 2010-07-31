@@ -12,6 +12,25 @@ class Host(Document):
     files = ListField(TextField())
 
 
+def add_host(hostname):
+    """Creates a new Host document for the given hostname"""
+
+    hostname = hostname.lower()
+    new_host = Host(name=hostname)
+    new_host.id = "alexandria.host:%s" % hostname
+    db = getDatabase()
+    new_host.store(db)
+
+
+def del_host(hostname):
+    """Deletes the Host document associated with the given hostname"""
+
+    hostname = hostname.lower()
+    doc_id = "alexandria.host:%s" % hostname
+    db = getDatabase()
+    db.delete(db[doc_id])
+
+
 def getDatabaseConnection(server='127.0.0.1', port=5984):
     """Returns a couchdb.client.Server instance"""
 
