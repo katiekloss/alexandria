@@ -12,19 +12,16 @@ class Host(Document):
     files = ListField(TextField())
 
 
-def getDatabaseConnection(username=None, password=None,
-    server='127.0.0.1', port=5984):
+def getDatabaseConnection(server='127.0.0.1', port=5984):
     """Returns a couchdb.client.Server instance"""
 
-    return couchdb.Server('http://%s:%s@%s:%s' % (username, password, server,
-        port))
+    return couchdb.Server('http://%s:%s' % (server, port))
 
 
-def getDatabase(username=None, password=None, server='127.0.0.1', port=5984,
-    db_name='alexandria'):
+def getDatabase(server='127.0.0.1', port=5984, db_name='alexandria'):
     """Returns a couchdb.client.Database instance"""
 
-    server = getDatabaseConnection(username, password, server, port)
+    server = getDatabaseConnection(server, port)
     try:
         db = server[db_name]
         logger.debug("Opened database")

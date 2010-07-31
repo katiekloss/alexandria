@@ -71,9 +71,7 @@ class Crawler:
     def initialize_database(self):
         """Attach a CouchDB Database instance to the crawler."""
 
-        username = self.config.get('couchdb', 'username')
-        password = self.config.get('couchdb', 'password')
-        self.db = alexandria.couch.getDatabase(username, password)
+        self.db = alexandria.couch.getDatabase()
         self.logger.debug("Created database connection")
 
     def get_old_hosts(self):
@@ -136,9 +134,7 @@ class CrawlerWorker(threading.Thread):
         """Setup a database connection to CouchDB."""
         config = ConfigParser.ConfigParser()
         config.read('crawler.cfg')
-        username = config.get('couchdb', 'username')
-        password = config.get('couchdb', 'password')
-        self.db = alexandria.couch.getDatabase(username, password)
+        self.db = alexandria.couch.getDatabase()
         self.logger.debug("Created database connection")
 
     def process_host(self, host):
