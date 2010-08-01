@@ -1,4 +1,5 @@
-from couchdb.http import ResourceNotFound
+import alexandria.exc as exc
+from couchdb.http import ResourceNotFound, ResourceConflict
 from couchdb.mapping import *
 import couchdb
 import logging
@@ -19,7 +20,11 @@ def add_host(hostname):
     new_host = Host(name=hostname)
     new_host.id = "alexandria.host:%s" % hostname
     db = getDatabase()
-    new_host.store(db)
+    try:
+        new_host.store(db)
+    except ResourceConflict:
+        raise exc.EditConflict("Document for host '%s' already exists"
+            % hostname)
 
 
 def del_host(hostname):
@@ -28,7 +33,11 @@ def del_host(hostname):
     hostname = hostname.lower()
     doc_id = "alexandria.host:%s" % hostname
     db = getDatabase()
-    db.delete(db[doc_id])
+    try:
+        db.delete(db[doc_id])
+    except ResourceNotFound:
+        raise exc.DocumentNotFound("Document for host '%s' not found"
+            % hostname)
 
 
 def getDatabaseConnection(server='127.0.0.1', port=5984):

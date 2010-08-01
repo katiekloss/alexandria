@@ -9,20 +9,27 @@ except ImportError:
     import alexandria
 
 import alexandria.couch
+import alexandria.exc
 import argparse
 
 def action_addhost(args):
     """Adds a host to the database"""
 
-    print "Adding host '%s' to the database" % args.host
-    alexandria.couch.add_host(args.host)
+    try:
+        alexandria.couch.add_host(args.host)
+        print "Added host to database"
+    except alexandria.exc.EditConflict:
+        print "Host is already in database!"
 
 
 def action_delhost(args):
     """Deletes a host from the database"""
 
-    print "Removing host '%s' from the database" % args.host
-    alexandria.couch.del_host(args.host)
+    try:
+        alexandria.couch.del_host(args.host)
+        print "Removed host from database"
+    except alexandria.exc.DocumentNotFound:
+        print "Host is not in database!"
 
 
 def create_parser():
