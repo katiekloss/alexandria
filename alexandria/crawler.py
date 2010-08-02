@@ -9,6 +9,7 @@ import time
 import ConfigParser
 import datetime
 import httplib
+import hashlib
 
 globalQueue = list()
 globalQueueLock = threading.Lock()
@@ -80,7 +81,7 @@ class Crawler:
         max_age = self.config.getint('crawler', 'max_host_age')
         expire_time = datetime.datetime.now() - \
             datetime.timedelta(hours=max_age)
-        expire_time = expire_time.strftime('%Y-%m-%d %H:%M:%S')
+        expire_time = expire_time.strftime('%Y-%m-%dT%H:%M:%SZ')
         self.logger.debug("Checking for hosts older than %s" % expire_time)
         map_fun = alexandria.js.fun_get_old_hosts % expire_time
         try:
@@ -113,7 +114,7 @@ class CrawlerWorker(threading.Thread):
                         host_key = None
             if host_key:
                 self.logger.debug("Processing key '%s'" % host_key)
-                host = self.db.get(host_key)
+                host = alexandria.couch.Host.load(self.db, host_key)
                 if 'name' in host:
                     if host['name']:
                         self.process_host(host)
@@ -140,7 +141,7 @@ class CrawlerWorker(threading.Thread):
     def process_host(self, host):
         """Given a document for host, index that host"""
         self.logger.info("Crawling host '%s'" % host['name'])
-        file_list = []
+        file_list = dict()
 
         try:
             shares = alexandria.discover.list_shares(host['name'])
@@ -150,12 +151,13 @@ class CrawlerWorker(threading.Thread):
 
         for share in shares:
             try:
-                files = alexandria.discover.list_files(host['name'], share)
-                file_list = file_list + [share + x for x in files]
+                for file in alexandria.discover.list_files(host['name'], share):
+                    name = share + file
+                    file_list[hashlib.md5(name).hexdigest()] = name
             except ValueError as e:
                 self.logger.error("Error while pulling filelist: %s" % e)
 
-        host['files'] = file_list
-        host['age'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.db.save(host)
-        self.logger.info("Crawl for host '%s' finished" % host['name'])
+        host.files = file_list
+        host.age = datetime.datetime.now()
+        host.store(self.db)
+        self.logger.info("Crawl for host '%s' finished" % host.name)

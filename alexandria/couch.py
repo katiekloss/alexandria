@@ -10,7 +10,7 @@ class Host(Document):
     """A generic Document representing a host"""
     name = TextField()
     age = DateTimeField()
-    files = ListField(TextField())
+    files = DictField()
 
 
 def add_host(hostname):
