@@ -16,7 +16,7 @@ def perform_simple_search(string):
     if len(sets) > 1:
         for result_set in sets[1:]:
             final_set = final_set & result_set
-    return final_set
+    return list(final_set)
 
 def tokenize_string(string):
     """Splits a string into a list of keys suitable for indexing/searching"""
