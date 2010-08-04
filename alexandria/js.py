@@ -9,7 +9,9 @@ function(doc) {
 }
 """
 
-fun_gen_doc_index = \
+files_doc = {
+    'index': {
+        'map':
 """
 function(doc) {
     for(var i in doc.files) {
@@ -23,3 +25,5 @@ function(doc) {
     }
 }
 """
+    }
+}

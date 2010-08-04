@@ -57,3 +57,27 @@ def getDatabase(server='127.0.0.1', port=5984, db_name='alexandria'):
         db = server.create(db_name)
         logger.info("Created database '%s' on server" % db_name)
     return db
+
+
+def store_design_doc(doc_name, views):
+    """Create or update a design document with the given name and views.
+    The views parameter is a nested dictionary keyed with the name of each view
+    that maps to a dictionary keyed with either 'map' or 'reduce' which then
+    maps to the function source:
+
+    views['view_name']['map'] = 'map_function'
+    views['view_name']['reduce'] = 'reduce_function
+    """
+
+    db = getDatabase()
+    doc_full_name = "_design/%s" % doc_name
+
+    try:
+        doc = db[doc_full_name]
+    except ResourceNotFound:
+        db[doc_full_name] = {}
+        doc = db[doc_full_name]
+
+    doc['language'] = 'javascript'
+    doc['views'] = views
+    db.save(doc)
