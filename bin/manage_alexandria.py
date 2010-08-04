@@ -10,6 +10,7 @@ except ImportError:
 
 import alexandria.couch
 import alexandria.exc
+import alexandria.js
 import argparse
 
 def action_addhost(args):
@@ -32,6 +33,13 @@ def action_delhost(args):
         print "Host is not in database!"
 
 
+def action_pushviews(args):
+    """Pushes design documents to CouchDB"""
+
+    alexandria.couch.store_design_doc('files', alexandria.js.files_doc)
+    print "Pushed all views"
+
+
 def create_parser():
     """Create an ArgumentParser"""
 
@@ -47,6 +55,10 @@ def create_parser():
         help="Delete a host from the database")
     delhost_parser.add_argument('host', help="The host to remove")
     delhost_parser.set_defaults(func=action_delhost)
+
+    pushviews_parser = subparsers.add_parser('pushviews',
+        help="Push design documents to CouchDB")
+    pushviews_parser.set_defaults(func=action_pushviews)
 
     return parser
 
