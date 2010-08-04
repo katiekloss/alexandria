@@ -25,5 +25,17 @@ function(doc) {
     }
 }
 """
+    },
+
+    'by_hash': {
+        'map':
+"""
+function(doc) {
+    for(var i in doc.files) {
+        var file = doc.files[i];
+        emit(i, [doc.name, file]);
+    }
+}
+"""
     }
 }
