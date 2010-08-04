@@ -11,7 +11,7 @@ def perform_simple_search(string):
     sets = []
     for key in keys:
         results = db.view('files/index', key=key)
-        sets.append(set([(x.id, x.value) for x in results]))
+        sets.append(set([x.value for x in results]))
     final_set = sets[0]
     if len(sets) > 1:
         for result_set in sets[1:]:
