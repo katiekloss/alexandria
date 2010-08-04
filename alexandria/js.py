@@ -16,7 +16,7 @@ files_doc = {
 function(doc) {
     for(var i in doc.files) {
         var file = doc.files[i].toLowerCase();
-        var tokens = file.split(/[^-A-Za-z0-9_]+/);
+        var tokens = file.split(/[^A-Za-z0-9]+/);
         tokens.map(
             function(token) {
                 emit(token, i);
